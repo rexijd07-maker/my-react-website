@@ -116,8 +116,6 @@ const nodeDetails = {
 
             <button type="submit">Sign In →</button>
           </form>
-
-          <small>Demo: admin@college.com / admin123</small>
         </div>
       </div>
     );
