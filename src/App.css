@@ -957,3 +957,93 @@ header p {
     min-height: 125px;
   }
 }
+/* =========================
+   ADDITIONAL POLISH STYLES
+========================= */
+
+/* Glassmorphism Effect for Dashboard Cards */
+.card, .stat-card, .login-card, .network-map, .node-details {
+  background: rgba(12, 25, 41, 0.8) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Custom Modern Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #07111f;
+}
+::-webkit-scrollbar-thumb {
+  background: #1c2d42;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #168cff;
+}
+
+/* Device Table & Status Pills */
+.device-table-card {
+  margin-top: 24px;
+}
+
+.device-table {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.device-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  background: #081421;
+  border-radius: 10px;
+  border: 1px solid #1f334a;
+  transition: border-color 0.2s ease;
+}
+
+.device-item:hover {
+  border-color: #386087;
+}
+
+.device-name {
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.device-ip {
+  color: #64748b;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.status-pill {
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-pill.online {
+  background: rgba(67, 223, 121, 0.15);
+  color: #43df79;
+  border: 1px solid rgba(67, 223, 121, 0.3);
+}
+
+.status-pill.offline {
+  background: rgba(255, 114, 114, 0.15);
+  color: #ff7272;
+  border: 1px solid rgba(255, 114, 114, 0.3);
+}
+
+/* Active Nav Border Highlight */
+.nav.active {
+  background: linear-gradient(90deg, rgba(22, 140, 255, 0.2) 0%, rgba(18, 50, 82, 0.5) 100%);
+  border-left: 3px solid #48a9ff;
+}

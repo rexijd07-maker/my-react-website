@@ -8,7 +8,15 @@ function App() {
   const [error, setError] = useState("");
 
   const [devices, setDevices] = useState(128);
+  const [onlineDevices, setOnlineDevices] = useState(117);
+const [offlineDevices, setOfflineDevices] = useState(11);
+const [networkHealth, setNetworkHealth] = useState(94);
+const [deviceList, setDeviceList] = useState([]);
   const [traffic, setTraffic] = useState(64);
+  const [trafficStatus, setTrafficStatus] = useState("Normal");
+  const [download, setDownload] = useState(180);
+const [upload, setUpload] = useState(52);
+  const [trafficHistory, setTrafficHistory] = useState([]);
   const [alerts, setAlerts] = useState(3);
   const [trafficData, setTrafficData] = useState([35, 55, 25, 70, 45, 60, 30, 75, 50, 65, 40, 80]);
 const [selectedNode, setSelectedNode] = useState(null);
@@ -17,58 +25,89 @@ const [monitoring, setMonitoring] = useState(true);
 const [liveUpdates, setLiveUpdates] = useState(true);
 const [alertSystem, setAlertSystem] = useState(true);
 const [refreshInterval, setRefreshInterval] = useState(3);
-const nodeDetails = {
-  "Internet": {
-    devices: "—",
-    status: "Connected",
-    traffic: "Normal",
-    response: "—"
-  },
-
-  "Main Router": {
-    devices: "—",
-    status: "Healthy",
-    traffic: "Normal",
-    response: "18 ms"
-  },
-
-  "Computer Lab A": {
-    devices: 42,
-    status: "Healthy",
-    traffic: "Normal",
-    response: "18 ms"
-  },
-
-  "Library": {
-    devices: 31,
-    status: "Healthy",
-    traffic: "Normal",
-    response: "18 ms"
-  },
-
-  "Computer Lab B": {
-    devices: 55,
-    status: "Warning",
-    traffic: "High",
-    response: "18 ms"
-  }
-};
+const [nodeDetails, setNodeDetails] = useState({});
   useEffect(() => {
+      fetch("http://127.0.0.1:5000/api/settings")
+    .then((res) => res.json())
+    .then((data) => {
+      setMonitoring(data.monitoring);
+      setLiveUpdates(data.live_updates);
+      setAlertSystem(data.alert_system);
+      setRefreshInterval(data.refresh_interval);
+    })
+    .catch((error) => {
+      console.log("Settings API Error:", error);
+    });
   if (!loggedIn || !monitoring || !liveUpdates) return;
+  fetch("http://127.0.0.1:5000/api/devices")
+  .then((response) => response.json())
+  .then((data) => {
+  setDevices(data.total_devices);
+  setOnlineDevices(data.online);
+  setOfflineDevices(data.offline);
+  setNetworkHealth(data.health);
+})
+  .catch((error) => {
+    console.error("Backend connection error:", error);
+  });
+    fetch("http://127.0.0.1:5000/api/device-list")
+    .then((res) => res.json())
+    .then((data) => {
+      setDeviceList(data);
+    })
+    .catch((error) => {
+      console.log("Device List API Error:", error);
+    });
+  fetch("http://127.0.0.1:5000/api/traffic")
+  .then((res) => res.json())
+ .then((data) => {
+  setTraffic(data.traffic);
+  setDownload(data.download);
+  setUpload(data.upload);
+  setTrafficStatus(data.status);
+})
+  .catch((error) => console.log("Traffic API Error:", error));
+  fetch("http://127.0.0.1:5000/api/alerts")
+  .then((res) => res.json())
+  .then((data) => {
+    setAlerts(data.alerts);
+  })
+  .catch((error) => console.log("Alerts API Error:", error));
+  fetch("http://127.0.0.1:5000/api/nodes")
+  .then((res) => res.json())
+  .then((data) => {
+    setNodeDetails(data);
+  })
+  .catch((error) => {
+    console.log("Nodes API Error:", error);
+  });
+  fetch("http://127.0.0.1:5000/api/traffic-history")
+  .then((res) => res.json())
+  .then((data) => {
+    setTrafficData(data.history);
+    setTrafficHistory(data.history);
+  })
+  .catch((error) => console.log("Traffic History API Error:", error));
   const timer = setInterval(() => {
-    setDevices((value) =>
-      Math.max(0, value + (Math.random() > 0.5 ? 1 : -1))
-    );
+  fetch("http://127.0.0.1:5000/api/devices")
+  .then((res) => res.json())
+  .then((data) => {
+    setDevices(data.total_devices);
+    setOnlineDevices(data.online);
+    setOfflineDevices(data.offline);
+  });
 
-    setTraffic(Math.floor(Math.random() * 30) + 55);
+setTraffic(Math.floor(Math.random() * 30) + 55);
+setTrafficStatus("Normal");
 
-    if (alertSystem) {
-      setAlerts(Math.floor(Math.random() * 5));
-    }
-
-    setTrafficData((prev) =>
-      [...prev.slice(1), Math.floor(Math.random() * 30) + 55]
-    );
+fetch("http://127.0.0.1:5000/api/alerts")
+  .then((res) => res.json())
+  .then((data) => {
+    setAlerts(data.alerts);
+  });
+  setTrafficData((prev) =>
+  prev.map(() => Math.floor(Math.random() * 80) + 20)
+);
   }, refreshInterval * 1000);
 
   return () => clearInterval(timer);
@@ -186,19 +225,19 @@ const nodeDetails = {
 
     <div className="card">
       <small>TOTAL DEVICES</small>
-      <h2>128</h2>
+      <h2>{devices}</h2>
       <p>Registered network devices</p>
     </div>
 
     <div className="card">
       <small>ONLINE</small>
-      <h2>117</h2>
+      <h2>{onlineDevices}</h2>
       <p>Currently connected</p>
     </div>
 
     <div className="card">
       <small>OFFLINE</small>
-      <h2>11</h2>
+      <h2>{offlineDevices}</h2>
       <p>Currently unavailable</p>
     </div>
 
@@ -211,11 +250,14 @@ const nodeDetails = {
   </div>
 
   <div className="card">
-    <h3>Connected Devices</h3>
-    <p>Computer Lab A — 42 devices</p>
-    <p>Library — 31 devices</p>
-    <p>Computer Lab B — 55 devices</p>
-  </div>
+  <h3>Connected Devices</h3>
+
+  {deviceList.map((device) => (
+    <p key={device.id}>
+      {device.name} — {device.status} — {device.ip_address}
+    </p>
+  ))}
+</div>
 <section className="traffic-section">
   <div className="section-title">
     <div>
@@ -256,13 +298,13 @@ const nodeDetails = {
 
     <div className="card">
       <small>DOWNLOAD</small>
-      <h2>180 Mbps</h2>
+      <h2>{download} Mbps</h2>
       <p>Current download speed</p>
     </div>
 
     <div className="card">
       <small>UPLOAD</small>
-      <h2>52 Mbps</h2>
+      <h2>{upload} Mbps</h2>
       <p>Current upload speed</p>
     </div>
 
@@ -316,7 +358,23 @@ const nodeDetails = {
           <input
             type="checkbox"
             checked={monitoring}
-            onChange={(e) => setMonitoring(e.target.checked)}
+            onChange={(e) => {
+  const value = e.target.checked;
+  setMonitoring(value);
+
+  fetch("http://127.0.0.1:5000/api/settings", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      monitoring: value,
+      live_updates: liveUpdates,
+      alert_system: alertSystem,
+      refresh_interval: refreshInterval,
+    }),
+  });
+}}
           />
           <span className="slider"></span>
         </label>
@@ -333,7 +391,23 @@ const nodeDetails = {
           <input
             type="checkbox"
             checked={liveUpdates}
-            onChange={(e) => setLiveUpdates(e.target.checked)}
+            onChange={(e) => {
+  const value = e.target.checked;
+  setLiveUpdates(value);
+
+  fetch("http://127.0.0.1:5000/api/settings", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      monitoring: monitoring,
+      live_updates: value,
+      alert_system: alertSystem,
+      refresh_interval: refreshInterval,
+    }),
+  });
+}}
           />
           <span className="slider"></span>
         </label>
@@ -350,7 +424,23 @@ const nodeDetails = {
           <input
             type="checkbox"
             checked={alertSystem}
-            onChange={(e) => setAlertSystem(e.target.checked)}
+            onChange={(e) => {
+  const value = e.target.checked;
+  setAlertSystem(value);
+
+  fetch("http://127.0.0.1:5000/api/settings", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      monitoring: monitoring,
+      live_updates: liveUpdates,
+      alert_system: value,
+      refresh_interval: refreshInterval,
+    }),
+  });
+}}
           />
           <span className="slider"></span>
         </label>
@@ -365,9 +455,23 @@ const nodeDetails = {
 
         <select
           value={refreshInterval}
-          onChange={(e) =>
-            setRefreshInterval(Number(e.target.value))
-          }
+          onChange={(e) => {
+  const value = Number(e.target.value);
+  setRefreshInterval(value);
+
+  fetch("http://127.0.0.1:5000/api/settings", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      monitoring: monitoring,
+      live_updates: liveUpdates,
+      alert_system: alertSystem,
+      refresh_interval: value,
+    }),
+  });
+}}
         >
           <option value="3">3 seconds</option>
           <option value="5">5 seconds</option>
@@ -390,9 +494,9 @@ const nodeDetails = {
       <span className="live-badge">● LIVE</span>
     </div>
       <div className="card">
-        <small>NETWORK STATUS</small>
-        <h2>Healthy</h2>
-        <p>Overall network condition</p>
+        <small>ACTIVE ALERTS</small>
+        <h2>{alerts}</h2>
+       <p>{alerts > 0 ? "Attention required" : "No active alerts"}</p>
       </div>
     
 </section>
@@ -414,7 +518,9 @@ const nodeDetails = {
 
   <div className="stat-card">
     <span className="stat-label">NETWORK HEALTH</span>
-    <strong className="stat-value">94<span>/100</span></strong>
+   <strong className="stat-value">
+  {networkHealth}<span>/100</span>
+</strong>
     <small className="stat-good">Excellent</small>
   </div>
 
@@ -426,13 +532,15 @@ const nodeDetails = {
 
   <div className="stat-card">
     <span className="stat-label">TOTAL DEVICES</span>
-    <strong className="stat-value">128</strong>
-    <small>117 online · 11 offline</small>
+    <strong className="stat-value">{devices}</strong>
+<small>{onlineDevices} online · {offlineDevices} offline</small>
   </div>
 
   <div className="stat-card">
     <span className="stat-label">NETWORK STATUS</span>
-    <strong className="stat-status">● ONLINE</strong>
+   <strong className={nodeDetails[selectedNode]?.status === "Warning" ? "warning" : "healthy"}>
+  ● {nodeDetails[selectedNode]?.status || "Loading..."}
+</strong>
     <small className="stat-good">All systems operational</small>
   </div>
 
@@ -523,8 +631,8 @@ const nodeDetails = {
       <div>
         <small>DEVICES</small>
         <strong>
-          {nodeDetails[selectedNode]?.devices || "—"}
-        </strong>
+  {nodeDetails[selectedNode]?.devices ?? "—"}
+</strong>
       </div>
 
       <div>
